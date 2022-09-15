@@ -44,7 +44,6 @@ export default function SocketConnectionProvider(props) {
 
 	const changeMap = (msg) => {
 		console.log('map selected', msg.map);
-		parseUsers(msg);
 		setSelectedMap(msg.map);
 	}
 
@@ -77,14 +76,14 @@ export default function SocketConnectionProvider(props) {
 					method: "connection",
 				})
 			);
-			socket.send(
-				JSON.stringify({
-					id: params.id,
-					userId: userId,
-					method: "mapChange",
-					map: 'customs',
-				})
-			);
+			// socket.send(
+			// 	JSON.stringify({
+			// 		id: params.id,
+			// 		userId: userId,
+			// 		method: "mapChange",
+			// 		map: 'customs',
+			// 	})
+			// );
 		};
 	}, []);
 
@@ -96,6 +95,7 @@ export default function SocketConnectionProvider(props) {
 					case "connection":
 						console.log(`Новый пользователь`, msg);
 						parseUsers(msg);
+						changeMap(msg);
 						break;
 					case "pin":
 						console.log("pinned", msg);
@@ -107,6 +107,7 @@ export default function SocketConnectionProvider(props) {
 						break;
 					case 'mapChange':
 						console.log('mapChange', msg);
+						parseUsers(msg);
 						changeMap(msg);
 						break;
 				}
