@@ -63,7 +63,7 @@ export default function SocketConnectionProvider(props) {
 	}, [params.id, userId, users, socket, selectedMap]);
 
 	useEffect(() => {
-		const socket = new WebSocket("ws://tarkov-map-server.herokuapp.com/");
+		const socket = new WebSocket("wss://tarkov-map-server.herokuapp.com/");
 		setSocket(socket);
 		socket.onopen = () => {
 			console.log("connected");
