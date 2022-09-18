@@ -77,24 +77,16 @@ export default function SocketConnectionProvider(props) {
 					method: "connection",
 				})
 			);
-			setInterval(
+			setInterval(() => {
 				socket.send(
 					JSON.stringify({
 						id: params.id,
 						userId: userId,
 						method: "ping",
 					})
-				),
+				)},
 				15000
 			);
-			// socket.send(
-			// 	JSON.stringify({
-			// 		id: params.id,
-			// 		userId: userId,
-			// 		method: "mapChange",
-			// 		map: 'customs',
-			// 	})
-			// );
 		};
 		
 	}, []);
