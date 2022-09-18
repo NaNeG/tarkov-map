@@ -43,9 +43,9 @@ export default function SocketConnectionProvider(props) {
 	};
 
 	const changeMap = (msg) => {
-		console.log('map selected', msg.map);
+		console.log("map selected", msg.map);
 		setSelectedMap(msg.map);
-	}
+	};
 
 	useEffect(() => {
 		setSessionId(params.id);
@@ -64,6 +64,7 @@ export default function SocketConnectionProvider(props) {
 
 	useEffect(() => {
 		const socket = new WebSocket("wss://tarkov-map-server.herokuapp.com/");
+		// const socket = new WebSocket("ws://localhost:5000/");
 		setSocket(socket);
 		socket.onopen = () => {
 			console.log("connected");
@@ -76,6 +77,16 @@ export default function SocketConnectionProvider(props) {
 					method: "connection",
 				})
 			);
+			setInterval(
+				socket.send(
+					JSON.stringify({
+						id: params.id,
+						userId: userId,
+						method: "ping",
+					})
+				),
+				15000
+			);
 			// socket.send(
 			// 	JSON.stringify({
 			// 		id: params.id,
@@ -85,7 +96,7 @@ export default function SocketConnectionProvider(props) {
 			// 	})
 			// );
 		};
-		setInterval(socket.ping(), 15000);
+		
 	}, []);
 
 	useEffect(() => {
@@ -106,14 +117,13 @@ export default function SocketConnectionProvider(props) {
 						console.log("Disconnect", msg);
 						parseUsers(msg);
 						break;
-					case 'mapChange':
-						console.log('mapChange', msg);
+					case "mapChange":
+						console.log("mapChange", msg);
 						parseUsers(msg);
 						changeMap(msg);
 						break;
 				}
 			};
-			
 		}
 	}, [socket, users]);
 
