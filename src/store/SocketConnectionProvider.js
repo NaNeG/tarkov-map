@@ -85,6 +85,7 @@ export default function SocketConnectionProvider(props) {
 			// 	})
 			// );
 		};
+		setInterval(socket.ping(), 15000);
 	}, []);
 
 	useEffect(() => {
@@ -112,6 +113,7 @@ export default function SocketConnectionProvider(props) {
 						break;
 				}
 			};
+			
 		}
 	}, [socket, users]);
 
