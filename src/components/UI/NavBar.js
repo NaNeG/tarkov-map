@@ -16,14 +16,14 @@ export default function NavBar(props) {
 	};
 
 	useEffect(() => {
-		console.log('map option change')
 		if (map !== selectedMap) {
+			console.log('map option change');
 			setSelectedMap(map);
 		}
 	}, [map]);
 
 	useEffect(() => {
-		if (socket && socket.readyState === WebSocket.OPEN) {
+		if (map !== selectedMap && socket && socket.readyState === WebSocket.OPEN) {
 			socket.send(
 				JSON.stringify({
 					id: sessionId,

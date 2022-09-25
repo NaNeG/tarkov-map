@@ -1,16 +1,25 @@
 import { useCallback, useContext, useEffect, useRef, useState } from "react";
-import { useParams } from "react-router-dom";
-import { v4 as uuid } from "uuid";
 import Draggable from "react-draggable";
 import customsMap from "../../img/maps/customs-monkix3.jpg";
 import reserveMap from "../../img/maps/reserve-2d.jpg";
 import shorelineMap from "../../img/maps/shoreline.jpg";
 import lighthouseMap from "../../img/maps/lighthouse-landscape.jpg";
-import mapPin from "../../img/icons/map-pin.png";
+import mapPinBlack from "../../img/icons/map-pin-black.png";
+import mapPinRed from "../../img/icons/map-pin-red.png";
+import mapPinGreen from "../../img/icons/map-pin-green.png";
+import mapPinBlue from "../../img/icons/map-pin-blue.png";
+import mapPinPink from "../../img/icons/map-pin-pink.png";
 import classes from "./Map.module.css";
 import SocketConnectionContext from "../../store/SocketConnectionContext";
 
 const maps = {'customs': customsMap, 'shoreline': shorelineMap, 'reserve': reserveMap, 'lighthouse': lighthouseMap};
+const colorIdToPinIcon = {
+	0: mapPinBlack,
+	1: mapPinRed,
+	2: mapPinGreen,
+	3: mapPinBlue,
+	4: mapPinPink,
+}
 
 export default function Map(props) {
 	const [scale, setScale] = useState(1);
@@ -30,12 +39,23 @@ export default function Map(props) {
 	}, [props.username]);
 
 	const scrollHandler = (event) => {
-		setScale((scale - event.deltaY / 500).toFixed(1));
+		let newScale = (scale - event.deltaY / 500).toFixed(1);
+		if (newScale >= 0.2 && newScale <= 3) {
+			setScale((scale - event.deltaY / 500).toFixed(1));
+		}
 	};
 
 	const imageMouseDownHandler = (event) => {
 		let posX = event.pageX;
 		let posY = event.pageY;
+		setStartCoords({ x: posX, y: posY });
+		console.log("pressed", posX, posY);
+	};
+
+	const imageTouchDownHandler = (event) => {
+		var touch = event.touches[0] || event.changedTouches[0];
+		let posX = touch.clientX;
+		let posY = touch.clientY;
 		setStartCoords({ x: posX, y: posY });
 		console.log("pressed", posX, posY);
 	};
@@ -46,6 +66,33 @@ export default function Map(props) {
 		let posY = event.pageY;
 		let currX = event.clientX - rect.left;
 		let currY = event.clientY - rect.top;
+		console.log("released", posX, posY);
+		if (
+			Math.abs(posX - startCoords.x) === 0 &&
+			Math.abs(posY - startCoords.y === 0)
+		) {
+			// console.log(socket, sessionId, userId, username);
+			socket.send(
+				JSON.stringify({
+					id: sessionId,
+					userId: userId,
+					method: "pin",
+					x: (currX / scale).toFixed(0),
+					y: (currY / scale).toFixed(0),
+				})
+			);
+
+			console.log((currX / scale).toFixed(0), (currY / scale).toFixed(0));
+		}
+	};
+
+	const imageTouchUpHandler = (event) => {
+		var touch = event.touches[0] || event.changedTouches[0];
+		let rect = event.target.getBoundingClientRect();
+		let posX = touch.clientX;
+		let posY = touch.clientY;
+		let currX = touch.clientX - rect.left;
+		let currY = touch.clientY - rect.top;
 		console.log("released", posX, posY);
 		if (
 			Math.abs(posX - startCoords.x) === 0 &&
@@ -89,6 +136,7 @@ export default function Map(props) {
 
 	useEffect(() => {
 		mapRef.current.style.transform = `scale(${scale})`;
+		console.log(scale);
 	}, [scale]);
 
 	return (
@@ -106,12 +154,15 @@ export default function Map(props) {
 								draggable={false}
 								src={maps[map]}
 								onMouseDown={imageMouseDownHandler}
+								onTouchStart={imageTouchDownHandler}
 								onMouseUp={imageMouseUpHandler}
+								onTouchEnd={imageTouchUpHandler}
 							/>
 							{users.map((user, index) => (
 								<img
 									key={index}
-									src={mapPin}
+									src={colorIdToPinIcon[user.pinColorId]}
+									// src={mapPinBlack}
 									user={user}
 									className={classes.mapPin}
 									hidden={!user.pinShown}
